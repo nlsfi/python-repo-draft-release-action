@@ -1,6 +1,6 @@
 [project]
 name = "python-repo-draft-release-action"
-version = "1.0.0"
+version = "1.0.0.post0"
 description = "Draft release GitHub action for python repositories"
 requires-python = ">=3.12"
 dependencies = [

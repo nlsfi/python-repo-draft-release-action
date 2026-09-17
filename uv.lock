@@ -93,7 +93,7 @@ wheels = [
 
 [[package]]
 name = "python-repo-draft-release-action"
-version = "1.0.0"
+version = "1.0.0.post0"
 source = { editable = "." }
 dependencies = [
     { name = "packaging" },
