@@ -3,17 +3,31 @@ name = "python-repo-draft-release-action"
 version = "0.0.1.dev1"
 description = "Draft release GitHub action for python repositories"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+  "packaging>=24.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.10.12,<0.11.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "draft_release"
 
 [tool.uv]
 default-groups = ["dev", "lint"]
 
 [dependency-groups]
 dev = [
+  "pytest>=8.4",
+  "pytest-mock>=3.14",
 ]
 lint = [
   "prek>=0.5.3",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["test"]
 
 [tool.ruff]
 target-version = "py312"
@@ -44,7 +58,7 @@ lint.select = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"*/test_*/*" = [
+"test/*" = [
   "INP001",
   "D",       # pydocstyle
   "DTZ",     # flake8-datetimez
