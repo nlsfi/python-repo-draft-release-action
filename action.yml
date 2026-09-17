@@ -73,6 +73,7 @@ runs:
       uses: EndBug/add-and-commit@cc9c08ba6c8df3b93a8f2db63e89b98368ae2ae8 # v11.1.1
       with:
         message: 'chore: release version ${{ steps.versions.outputs.version }}'
+        push: false
 
     - name: Update files for next version
       shell: bash
@@ -89,6 +90,13 @@ runs:
       uses: EndBug/add-and-commit@cc9c08ba6c8df3b93a8f2db63e89b98368ae2ae8 # v11.1.1
       with:
         message: 'chore: bump version to ${{ steps.versions.outputs.next_version }}'
+        push: false
+
+    # Commits are pushed only after both have succeeded, so a failure in the
+    # steps above leaves the remote untouched
+    - name: Push release commits
+      shell: bash
+      run: git push origin HEAD
 
     - name: Create draft release
       uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
