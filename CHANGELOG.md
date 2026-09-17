@@ -1,5 +1,7 @@
 # CHANGELOG
 
+## Unreleased
+
 ## 1.0.1 - 2026-09-17
 
 - Fix: insert the Unreleased changelog header before the first version section
