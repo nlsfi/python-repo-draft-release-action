@@ -1,0 +1,102 @@
+name: Python repo draft release
+description: Create release and post-release commits and a draft GitHub release for a python repository
+inputs:
+  version:
+    description: Release version without the tag prefix (e.g. "1.0.0")
+    required: true
+  version_file:
+    description: Path to the python file containing the __version__ attribute or to a pyproject.toml with a static project version
+    required: true
+  changelog_file:
+    description: Path to the changelog file
+    required: false
+    default: CHANGELOG.md
+  next_version:
+    description: Version to set after the release. Defaults to "<version>.post0"
+    required: false
+    default: ""
+  tag_prefix:
+    description: Prefix of the release tag
+    required: false
+    default: v
+  token:
+    description: Token used to create the draft release
+    required: false
+    default: ${{ github.token }}
+outputs:
+  version:
+    description: Normalized release version
+    value: ${{ steps.versions.outputs.version }}
+  next_version:
+    description: Normalized version set after the release
+    value: ${{ steps.versions.outputs.next_version }}
+  release_commit_sha:
+    description: SHA of the release commit
+    value: ${{ steps.release-commit.outputs.commit_long_sha }}
+
+runs:
+  using: composite
+  steps:
+    - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+
+    - name: Install draft release scripts
+      shell: bash
+      run: uv sync --project "$GITHUB_ACTION_PATH" --frozen --no-default-groups
+
+    - name: Resolve versions
+      id: versions
+      shell: bash
+      env:
+        PYTHON: ${{ github.action_path }}/.venv/bin/python
+        VERSION: ${{ inputs.version }}
+        NEXT_VERSION: ${{ inputs.next_version }}
+      run: |
+        version="$("$PYTHON" -m draft_release.parse_version "$VERSION")"
+        next_version="$("$PYTHON" -m draft_release.parse_version "${NEXT_VERSION:-${version}.post0}")"
+        echo "version=$version" >> "$GITHUB_OUTPUT"
+        echo "next_version=$next_version" >> "$GITHUB_OUTPUT"
+
+    - name: Update files for release
+      shell: bash
+      env:
+        PYTHON: ${{ github.action_path }}/.venv/bin/python
+        VERSION: ${{ steps.versions.outputs.version }}
+        VERSION_FILE: ${{ inputs.version_file }}
+        CHANGELOG_FILE: ${{ inputs.changelog_file }}
+      run: |
+        "$PYTHON" -m draft_release.update_changelog "$VERSION" "$CHANGELOG_FILE"
+        "$PYTHON" -m draft_release.set_version "$VERSION_FILE" "$VERSION"
+        "$PYTHON" -m draft_release.extract_changes "$VERSION" "$CHANGELOG_FILE" > "$RUNNER_TEMP/release-changes.md"
+
+    - name: Create release commit
+      id: release-commit
+      uses: EndBug/add-and-commit@cc9c08ba6c8df3b93a8f2db63e89b98368ae2ae8 # v11.1.1
+      with:
+        message: 'chore: release version ${{ steps.versions.outputs.version }}'
+
+    - name: Update files for next version
+      shell: bash
+      env:
+        PYTHON: ${{ github.action_path }}/.venv/bin/python
+        NEXT_VERSION: ${{ steps.versions.outputs.next_version }}
+        VERSION_FILE: ${{ inputs.version_file }}
+        CHANGELOG_FILE: ${{ inputs.changelog_file }}
+      run: |
+        "$PYTHON" -m draft_release.update_changelog Unreleased "$CHANGELOG_FILE"
+        "$PYTHON" -m draft_release.set_version "$VERSION_FILE" "$NEXT_VERSION"
+
+    - name: Create next version commit
+      uses: EndBug/add-and-commit@cc9c08ba6c8df3b93a8f2db63e89b98368ae2ae8 # v11.1.1
+      with:
+        message: 'chore: bump version to ${{ steps.versions.outputs.next_version }}'
+
+    - name: Create draft release
+      uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+      with:
+        token: ${{ inputs.token }}
+        name: ${{ steps.versions.outputs.version }}
+        tag_name: ${{ inputs.tag_prefix }}${{ steps.versions.outputs.version }}
+        target_commitish: ${{ steps.release-commit.outputs.commit_long_sha }}
+        draft: true
+        generate_release_notes: true
+        body_path: ${{ runner.temp }}/release-changes.md
