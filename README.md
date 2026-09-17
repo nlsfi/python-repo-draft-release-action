@@ -40,8 +40,8 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v7
-      - uses: nlsfi/python-repo-draft-release-action@v1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: nlsfi/python-repo-draft-release-action@ea46c6e11789b863fdd1662748f469fc5fb421d4 # v1.0.0
         with:
           version: ${{ inputs.version }}
           version_file: src/my_package/__init__.py
