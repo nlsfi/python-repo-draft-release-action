@@ -49,14 +49,14 @@ jobs:
 
 ### Inputs
 
-| Name             | Required | Default               | Description                                                   |
-| ---------------- | -------- | --------------------- | ------------------------------------------------------------- |
-| `version`        | yes      |                       | Release version without the tag prefix (e.g. `1.0.0`)         |
-| `version_file`   | yes      |                       | Path to the file containing `__version__` or `pyproject.toml` |
-| `changelog_file` | no       | `CHANGELOG.md`        | Path to the changelog file                                    |
-| `next_version`   | no       | `<version>.post0`     | Version to set after the release                              |
-| `tag_prefix`     | no       | `v`                   | Prefix of the release tag                                     |
-| `token`          | no       | `${{ github.token }}` | Token used to create the draft release                        |
+| Name             | Required | Default             | Description                                                   |
+| ---------------- | -------- | ------------------- | ------------------------------------------------------------- |
+| `version`        | yes      |                     | Release version without the tag prefix (e.g. `1.0.0`)         |
+| `version_file`   | yes      |                     | Path to the file containing `__version__` or `pyproject.toml` |
+| `changelog_file` | no       | `CHANGELOG.md`      | Path to the changelog file                                    |
+| `next_version`   | no       | `<version>.post0`   | Version to set after the release                              |
+| `tag_prefix`     | no       | `v`                 | Prefix of the release tag                                     |
+| `token`          | no       | `${{github.token}}` | Token used to create the draft release                        |
 
 ### Outputs
 
