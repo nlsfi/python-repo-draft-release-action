@@ -66,11 +66,30 @@ def test_add_unreleased_header_when_already_present(changelog_file: Path):
     assert changelog_file.read_text(encoding="utf-8") == CHANGELOG
 
 
-def test_add_unreleased_header_without_title(changelog_file: Path):
+def test_add_unreleased_header_with_intro_text(changelog_file: Path):
     changelog_file.write_text(
-        "# Changelog\n\n## 1.0.0 - 2026-01-01\n", encoding="utf-8"
+        "# Changelog\n\nAll notable changes are listed here.\n\n"
+        "## 1.0.0 - 2026-01-01\n\n- feat: thing\n",
+        encoding="utf-8",
     )
-    with pytest.raises(ValueError, match="missing title '# CHANGELOG'"):
+    update_changelog(changelog_file, "Unreleased")
+    assert changelog_file.read_text(encoding="utf-8") == (
+        "# Changelog\n\nAll notable changes are listed here.\n\n"
+        "## Unreleased\n\n## 1.0.0 - 2026-01-01\n\n- feat: thing\n"
+    )
+
+
+def test_add_unreleased_header_without_sections(changelog_file: Path):
+    changelog_file.write_text("# Changelog\n", encoding="utf-8")
+    update_changelog(changelog_file, "Unreleased")
+    assert changelog_file.read_text(encoding="utf-8") == (
+        "# Changelog\n\n## Unreleased\n\n"
+    )
+
+
+def test_add_unreleased_header_without_title_or_sections(changelog_file: Path):
+    changelog_file.write_text("Some text\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="missing a title or a version section"):
         update_changelog(changelog_file, "Unreleased")
 
 

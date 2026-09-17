@@ -11,25 +11,40 @@ from zoneinfo import ZoneInfo
 
 UNRELEASED = "Unreleased"
 UNRELEASED_HEADER = f"## {UNRELEASED}"
-TITLE = "# CHANGELOG"
 
 
 def _has_unreleased_header(text: str) -> bool:
     return any(line.startswith(UNRELEASED_HEADER) for line in text.splitlines())
 
 
+def _unreleased_header_index(lines: list[str]) -> int:
+    """Return the line index where the Unreleased header should be inserted.
+
+    The header goes before the first version section, or after the title
+    if the changelog has no sections yet.
+    """
+    for index, line in enumerate(lines):
+        if line.startswith("## "):
+            return index
+    for index, line in enumerate(lines):
+        if line.startswith("# "):
+            return index + 1
+    msg = "Changelog is missing a title or a version section"
+    raise ValueError(msg)
+
+
 def add_unreleased_header(changelog_file: Path) -> None:
-    """Add an Unreleased header below the changelog title."""
+    """Add an Unreleased header before the first version section."""
     text = changelog_file.read_text(encoding="utf-8")
     if _has_unreleased_header(text):
         msg = f"{changelog_file.stem} already has a header '{UNRELEASED}'"
         raise ValueError(msg)
-    if TITLE not in text:
-        msg = f"{changelog_file.stem} is missing title '{TITLE}'"
-        raise ValueError(msg)
-    changelog_file.write_text(
-        text.replace(TITLE, f"{TITLE}\n\n{UNRELEASED_HEADER}", 1), encoding="utf-8"
-    )
+    lines = text.splitlines(keepends=True)
+    index = _unreleased_header_index(lines)
+    lines.insert(index, f"{UNRELEASED_HEADER}\n\n")
+    if index > 0 and lines[index - 1].strip():
+        lines.insert(index, "\n")
+    changelog_file.write_text("".join(lines), encoding="utf-8")
 
 
 def release_unreleased_header(changelog_file: Path, version: str) -> None:
