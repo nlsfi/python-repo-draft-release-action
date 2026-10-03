@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fix: update the workspace uv.lock when setting the version of a workspace member
+- Feat: support multiple version files, e.g. uv workspace members
 
 ## 1.0.1 - 2026-09-17
 

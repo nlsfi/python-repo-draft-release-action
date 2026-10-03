@@ -93,3 +93,18 @@ def test_validate_version_invalid(new_version: str, current_version: str):
 def test_main(init_file: Path):
     main([str(init_file), "1.1.0"])
     assert get_version(init_file) == Version("1.1.0")
+
+
+def test_main_with_multiple_files(init_file: Path, tmp_path: Path):
+    other_file = tmp_path / "other.py"
+    other_file.write_text('__version__ = "1.0.0.post0"\n', encoding="utf-8")
+    main([str(init_file), str(other_file), "1.1.0"])
+    assert get_version(init_file) == get_version(other_file) == Version("1.1.0")
+
+
+def test_main_validates_all_before_writing(init_file: Path, tmp_path: Path):
+    other_file = tmp_path / "other.py"
+    other_file.write_text('__version__ = "2.0.0"\n', encoding="utf-8")
+    with pytest.raises(ValueError, match="must be higher"):
+        main([str(init_file), str(other_file), "1.1.0"])
+    assert get_version(init_file) == Version("1.0.0.post0")

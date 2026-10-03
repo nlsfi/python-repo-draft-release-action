@@ -20,6 +20,8 @@ The action:
   `version`. A `pyproject.toml` is updated with `uv version`, which also updates
   the package version in `uv.lock` if the project or its uv workspace has a lock
   file.
+- Multiple version files, e.g. the members of a uv workspace, can be given one
+  per line. All of them are set to the same version.
 - The changelog must start with `# CHANGELOG` and contain a `## Unreleased` header.
 - The workflow needs `contents: write` permission.
 
@@ -53,7 +55,7 @@ jobs:
 | Name             | Required | Default             | Description                                                   |
 | ---------------- | -------- | ------------------- | ------------------------------------------------------------- |
 | `version`        | yes      |                     | Release version without the tag prefix (e.g. `1.0.0`)         |
-| `version_file`   | yes      |                     | Path to the file containing `__version__` or `pyproject.toml` |
+| `version_file`   | yes      |                     | Path(s) to `__version__` files or `pyproject.toml`s           |
 | `changelog_file` | no       | `CHANGELOG.md`      | Path to the changelog file                                    |
 | `next_version`   | no       | `<version>.post0`   | Version to set after the release                              |
 | `tag_prefix`     | no       | `v`                 | Prefix of the release tag                                     |
@@ -74,7 +76,7 @@ The scripts in `src/draft_release` can also be used directly:
 ```shell
 python -m draft_release.get_version <version_file>
 python -m draft_release.parse_version <version> [base]
-python -m draft_release.set_version <version_file> <version>
+python -m draft_release.set_version <version_file>... <version>
 python -m draft_release.update_changelog <version|Unreleased> [changelog_file]
 python -m draft_release.extract_changes <version> [changelog_file]
 ```

@@ -38,12 +38,15 @@ def set_version(version_file: Path, version: str) -> Version:
 
 
 def main(argv: Sequence[str] | None = None) -> None:
-    """Set the version in the given init file or pyproject.toml."""
+    """Set the version in the given init files or pyproject.toml files."""
     parser = argparse.ArgumentParser(description=main.__doc__)
-    parser.add_argument("version_file", type=Path)
+    parser.add_argument("version_files", type=Path, nargs="+", metavar="version_file")
     parser.add_argument("version")
     args = parser.parse_args(argv)
-    set_version(args.version_file, args.version)
+    for version_file in args.version_files:
+        validate_version(Version(args.version), read_version(version_file))
+    for version_file in args.version_files:
+        set_version(version_file, args.version)
 
 
 if __name__ == "__main__":
