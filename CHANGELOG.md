@@ -1,5 +1,7 @@
 # CHANGELOG
 
+## Unreleased
+
 ## 1.1.0 - 2026-10-03
 
 - Fix: update the workspace uv.lock when setting the version of a workspace member
