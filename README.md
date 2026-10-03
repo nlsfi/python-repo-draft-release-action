@@ -44,7 +44,7 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: nlsfi/python-repo-draft-release-action@f2c3e8836f3c2a66542bf051d1d8680a830bdea6 # v1.0.0
+      - uses: nlsfi/python-repo-draft-release-action@d2e2bfad49de0aca3dffe1a057f04508696c0b7a # v1.1.0
         with:
           version: ${{ inputs.version }}
           version_file: src/my_package/__init__.py
