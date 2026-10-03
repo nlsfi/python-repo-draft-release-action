@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fix: update the workspace uv.lock when setting the version of a workspace member
+
 ## 1.0.1 - 2026-09-17
 
 - Fix: insert the Unreleased changelog header before the first version section
