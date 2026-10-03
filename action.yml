@@ -5,7 +5,9 @@ inputs:
     description: Release version without the tag prefix (e.g. "1.0.0")
     required: true
   version_file:
-    description: Path to the python file containing the __version__ attribute or to a pyproject.toml with a static project version
+    description: >-
+      Path to the python file containing the __version__ attribute or to a pyproject.toml with a static project version.
+      Multiple files (e.g. uv workspace members) can be given one per line
     required: true
   changelog_file:
     description: Path to the changelog file
@@ -65,7 +67,7 @@ runs:
         CHANGELOG_FILE: ${{ inputs.changelog_file }}
       run: |
         "$PYTHON" -m draft_release.update_changelog "$VERSION" "$CHANGELOG_FILE"
-        "$PYTHON" -m draft_release.set_version "$VERSION_FILE" "$VERSION"
+        "$PYTHON" -m draft_release.set_version $VERSION_FILE "$VERSION"
         "$PYTHON" -m draft_release.extract_changes "$VERSION" "$CHANGELOG_FILE" > "$RUNNER_TEMP/release-changes.md"
 
     - name: Create release commit
@@ -84,7 +86,7 @@ runs:
         CHANGELOG_FILE: ${{ inputs.changelog_file }}
       run: |
         "$PYTHON" -m draft_release.update_changelog Unreleased "$CHANGELOG_FILE"
-        "$PYTHON" -m draft_release.set_version "$VERSION_FILE" "$NEXT_VERSION"
+        "$PYTHON" -m draft_release.set_version $VERSION_FILE "$NEXT_VERSION"
 
     - name: Create next version commit
       uses: EndBug/add-and-commit@cc9c08ba6c8df3b93a8f2db63e89b98368ae2ae8 # v11.1.1
