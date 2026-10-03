@@ -18,7 +18,8 @@ The action:
 - The version file is either a python file containing a line
   `__version__ = "<version>"` or a `pyproject.toml` with a static `[project]`
   `version`. A `pyproject.toml` is updated with `uv version`, which also updates
-  the root package version in `uv.lock` if the lock file exists.
+  the package version in `uv.lock` if the project or its uv workspace has a lock
+  file.
 - The changelog must start with `# CHANGELOG` and contain a `## Unreleased` header.
 - The workflow needs `contents: write` permission.
 

@@ -32,13 +32,23 @@ def _read_pyproject_version(pyproject_file: Path) -> Version:
         raise ValueError(msg) from error
 
 
+def _has_lock_file(project_dir: Path) -> bool:
+    """Check for uv.lock in the project or its workspace up to the repository root."""
+    for directory in (project_dir, *project_dir.resolve().parents):
+        if (directory / "uv.lock").exists():
+            return True
+        if (directory / ".git").exists():
+            return False
+    return False
+
+
 def _write_pyproject_version(pyproject_file: Path, version: Version) -> None:
     uv = shutil.which("uv")
     if uv is None:
         msg = "uv is required to set the version in pyproject.toml"
         raise RuntimeError(msg)
     project_dir = pyproject_file.parent
-    lock_mode = "--no-sync" if (project_dir / "uv.lock").exists() else "--frozen"
+    lock_mode = "--no-sync" if _has_lock_file(project_dir) else "--frozen"
     subprocess.run(  # noqa: S603
         [uv, "version", "--project", str(project_dir), lock_mode, str(version)],
         check=True,

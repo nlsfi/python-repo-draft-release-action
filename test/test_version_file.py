@@ -3,7 +3,6 @@
 # This file is part of the Pinta.
 # Licensed under the MIT License; see the repository LICENSE file.
 
-import shutil
 import subprocess
 from pathlib import Path
 
@@ -109,7 +108,6 @@ def test_set_version_pyproject_validates_before_writing(
     uv_run.assert_not_called()
 
 
-@pytest.mark.skipif(shutil.which("uv") is None, reason="uv is not installed")
 def test_set_version_pyproject_with_uv(
     pyproject_file: Path, monkeypatch: pytest.MonkeyPatch
 ):
@@ -122,7 +120,6 @@ def test_set_version_pyproject_with_uv(
     assert get_version(pyproject_file) == Version("1.1.0")
 
 
-@pytest.mark.skipif(shutil.which("uv") is None, reason="uv is not installed")
 def test_set_version_pyproject_updates_lock(
     pyproject_file: Path, monkeypatch: pytest.MonkeyPatch
 ):
@@ -132,3 +129,45 @@ def test_set_version_pyproject_updates_lock(
     lock = (pyproject_file.parent / "uv.lock").read_text(encoding="utf-8")
     assert 'name = "demo"\nversion = "1.1.0"' in lock
     assert not (pyproject_file.parent / ".venv").exists()
+
+
+WORKSPACE_ROOT_PYPROJECT = """[project]
+name = "root"
+version = "0.0.0"
+requires-python = ">=3.12"
+dependencies = []
+
+[tool.uv.workspace]
+members = ["packages/*"]
+"""
+
+
+@pytest.fixture
+def workspace_member_pyproject(tmp_path: Path) -> Path:
+    (tmp_path / "pyproject.toml").write_text(WORKSPACE_ROOT_PYPROJECT, encoding="utf-8")
+    file = tmp_path / "packages" / "demo" / "pyproject.toml"
+    file.parent.mkdir(parents=True)
+    file.write_text(PYPROJECT, encoding="utf-8")
+    return file
+
+
+def test_write_pyproject_version_ignores_lock_outside_repository(
+    workspace_member_pyproject: Path, uv_run: MockType
+):
+    (workspace_member_pyproject.parent / ".git").mkdir()
+    (workspace_member_pyproject.parents[2] / "uv.lock").touch()
+    write_version(workspace_member_pyproject, Version("1.1.0"))
+    assert "--frozen" in uv_run.call_args.args[0]
+
+
+def test_set_version_workspace_member_updates_workspace_lock(
+    workspace_member_pyproject: Path, monkeypatch: pytest.MonkeyPatch
+):
+    monkeypatch.delenv("VIRTUAL_ENV", raising=False)
+    workspace_root = workspace_member_pyproject.parents[2]
+    subprocess.run(["uv", "lock", "--project", workspace_root], check=True)
+    set_version(workspace_member_pyproject, "1.1.0")
+    lock = (workspace_root / "uv.lock").read_text(encoding="utf-8")
+    assert 'name = "demo"\nversion = "1.1.0"' in lock
+    assert not (workspace_member_pyproject.parent / "uv.lock").exists()
+    assert not (workspace_root / ".venv").exists()
